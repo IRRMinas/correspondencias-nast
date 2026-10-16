@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔐 Entrar - Correios IRR</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    * { font-family: 'Inter', sans-serif; }
+    .bg-dark { background: #0a0a0f; }
+    .bg-card { background: #12121e; }
+    .border-card { border-color: #2a2a3a; }
+    input { background: #1a1a2e; border: 1px solid #2a2a3a; color: #e2e8f0; }
+    input:focus { border-color: #6366f1; outline: none; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); }
+    input::placeholder { color: #4a4a5a; }
+  </style>
+  <script>window.PAGINA_PUBLICA = true;</script>
+  <script src="app.js"></script>
+</head>
+<body class="bg-dark text-slate-200 min-h-screen flex items-center justify-center p-4">
+
+  <div class="w-full max-w-sm">
+    <div class="text-center mb-8">
+      <div class="w-14 h-14 rounded-2xl bg-indigo-600/20 flex items-center justify-center mx-auto mb-4">
+        <i class="fas fa-envelope text-indigo-400 text-2xl"></i>
+      </div>
+      <h1 class="text-2xl font-extrabold text-white tracking-tight">Gestão de Correios</h1>
+      <p class="text-xs text-slate-500">Instituto René Rachou - FIOCRUZ</p>
+    </div>
+
+    <form id="formLogin" class="bg-card border border-card rounded-2xl p-6 space-y-4">
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+          <i class="fas fa-user mr-1"></i> Usuário
+        </label>
+        <input type="text" id="login" autocomplete="username" autocapitalize="none" required class="w-full rounded-xl px-4 py-3 text-sm transition">
+      </div>
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+          <i class="fas fa-lock mr-1"></i> Senha
+        </label>
+        <input type="password" id="senha" autocomplete="current-password" required class="w-full rounded-xl px-4 py-3 text-sm transition">
+      </div>
+      <p id="msg" class="hidden text-sm text-rose-400"></p>
+      <button type="submit" id="btnEntrar" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2 text-sm">
+        <i class="fas fa-right-to-bracket"></i> Entrar
+      </button>
+      <p class="text-[11px] text-slate-500 text-center">Todos os acessos e alterações ficam registrados.</p>
+    </form>
+  </div>
+
+  <script>
+    if (lerSessao()) location.replace('index.html');
+
+    document.getElementById('formLogin').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btnEntrar');
+      const msg = document.getElementById('msg');
+      msg.classList.add('hidden');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Entrando...';
+
+      try {
+        const r = await api('login', {
+          login: document.getElementById('login').value,
+          senha: document.getElementById('senha').value
+        });
+        if (!r.sucesso) throw new Error(r.mensagem);
+        salvarSessao({ token: r.token, nome: r.nome, login: r.login, trocar: r.trocar, expira: r.expira });
+        location.replace('index.html');
+      } catch (err) {
+        msg.textContent = err.message;
+        msg.classList.remove('hidden');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-right-to-bracket"></i> Entrar';
+      }
+    });
+  </script>
+</body>
+</html>

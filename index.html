@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📬 Gestão de Correios - IRR</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    * { font-family: 'Inter', sans-serif; }
+    .bg-dark { background: #0a0a0f; }
+    .bg-card { background: #12121e; }
+    .border-card { border-color: #2a2a3a; }
+    .glow { box-shadow: 0 0 40px rgba(99, 102, 241, 0.1); }
+    input, select, textarea {
+      background: #1a1a2e;
+      border: 1px solid #2a2a3a;
+      color: #e2e8f0;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: #6366f1;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+    input::placeholder, textarea::placeholder {
+      color: #4a4a5a;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    }
+    .btn-primary:hover {
+      transform: scale(1.02);
+      box-shadow: 0 0 30px rgba(99, 102, 241, 0.3);
+    }
+    .status-success { background: #064e3b; border-color: #10b981; color: #6ee7b7; }
+    .status-error { background: #7f1d1d; border-color: #ef4444; color: #fca5a5; }
+    .status-info { background: #1e3a5f; border-color: #3b82f6; color: #93c5fd; }
+    .badge { background: #1a1a2e; color: #94a3b8; padding: 4px 12px; border-radius: 20px; font-size: 11px; }
+  </style>
+  <script src="app.js"></script>
+</head>
+<body class="bg-dark text-slate-200 min-h-screen">
+
+  <div class="max-w-4xl mx-auto p-4 md:p-6">
+    <!-- HEADER -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+      <div>
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-indigo-600/20 flex items-center justify-center">
+            <i class="fas fa-envelope text-indigo-400 text-lg"></i>
+          </div>
+          <div>
+            <h1 class="text-2xl font-extrabold text-white tracking-tight">Gestão de Correios</h1>
+            <p class="text-xs text-slate-500">Instituto René Rachou - FIOCRUZ</p>
+          </div>
+        </div>
+      </div>
+      <div class="flex gap-2 items-center flex-wrap" id="navTopo">
+        <a href="dashboard.html" class="px-4 py-2 rounded-xl bg-card border border-card hover:border-indigo-500/50 text-sm text-slate-400 hover:text-white transition flex items-center gap-2">
+          <i class="fas fa-chart-pie"></i> Dashboard
+        </a>
+        <a href="busca.html" class="px-4 py-2 rounded-xl bg-card border border-card hover:border-indigo-500/50 text-sm text-slate-400 hover:text-white transition flex items-center gap-2">
+          <i class="fas fa-search"></i> Buscar
+        </a>
+      </div>
+    </div>
+
+    <!-- FORM CARD -->
+    <div class="bg-card border border-card rounded-2xl p-6 glow">
+      <div class="flex items-center gap-3 mb-6">
+        <i class="fas fa-pen-to-square text-indigo-400"></i>
+        <h2 class="text-lg font-semibold text-white">Novo Lançamento</h2>
+        <span class="badge ml-auto">Preenchimento obrigatório</span>
+      </div>
+
+      <form id="formCorreio" class="space-y-5">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Data -->
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+              <i class="far fa-calendar mr-1"></i> Data do Envio
+            </label>
+            <input type="date" id="data" class="w-full rounded-xl px-4 py-3 text-sm transition">
+            <p class="text-xs text-slate-500 mt-1">Opcional: preencha quando os Correios confirmarem (pode ser editada depois na Busca). A <b>data de registro</b> é automática.</p>
+          </div>
+          
+          <!-- Quantidade -->
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+              <i class="fas fa-hashtag mr-1"></i> Quantidade
+            </label>
+            <input type="number" id="quantidade" value="1" min="1" class="w-full rounded-xl px-4 py-3 text-sm transition">
+          </div>
+        </div>
+
+        <!-- Tipo de Envio -->
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+            <i class="fas fa-truck mr-1"></i> Tipo de Envio
+          </label>
+          <select id="tipoEnvio" class="w-full rounded-xl px-4 py-3 text-sm transition">
+            <option value="SEDEX">SEDEX</option>
+            <option value="SEDEX COM AR">SEDEX COM AR</option>
+            <option value="SEDEX 10">SEDEX 10</option>
+            <option value="CARTA SIMPLES">CARTA SIMPLES</option>
+            <option value="CARTA REGISTRADA COM AR">CARTA REGISTRADA COM AR</option>
+            <option value="PACOTE">PACOTE</option>
+            <option value="OUTRO">OUTRO</option>
+          </select>
+        </div>
+
+        <!-- Destinatário -->
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+            <i class="fas fa-user mr-1"></i> Destinatário
+          </label>
+          <input type="text" id="destinatario" placeholder="Nome completo ou instituição" data-caixa-alta class="w-full rounded-xl px-4 py-3 text-sm transition">
+        </div>
+
+
+        <!-- Endereço do destinatário -->
+        <div class="rounded-xl border border-slate-800 p-4 space-y-4">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-400"><i class="fas fa-location-dot mr-1"></i> Endereço do destinatário</p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-[10px] uppercase tracking-wider text-slate-500 mb-1">CEP</label>
+              <div class="flex gap-2">
+                <input type="text" id="cep" inputmode="numeric" maxlength="9" placeholder="00000-000" class="w-full rounded-xl px-4 py-3 text-sm transition">
+                <button type="button" id="btnCep" title="Buscar endereço pelo CEP" class="px-4 rounded-xl bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white transition"><i class="fas fa-magnifying-glass-location"></i></button>
+              </div>
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-[10px] uppercase tracking-wider text-slate-500 mb-1">Endereço (inclua número e complemento)</label>
+              <input type="text" id="endereco" placeholder="Rua, número, complemento" data-caixa-alta class="w-full rounded-xl px-4 py-3 text-sm transition">
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
+            <div class="md:col-span-2">
+              <label class="block text-[10px] uppercase tracking-wider text-slate-500 mb-1">Bairro</label>
+              <input type="text" id="bairro" data-caixa-alta class="w-full rounded-xl px-4 py-3 text-sm transition">
+            </div>
+            <div class="md:col-span-3">
+              <label class="block text-[10px] uppercase tracking-wider text-slate-500 mb-1">Cidade</label>
+              <input type="text" id="cidade" data-caixa-alta class="w-full rounded-xl px-4 py-3 text-sm transition">
+            </div>
+            <div>
+              <label class="block text-[10px] uppercase tracking-wider text-slate-500 mb-1">UF</label>
+              <input type="text" id="uf" maxlength="2" data-caixa-alta class="w-full rounded-xl px-4 py-3 text-sm transition">
+            </div>
+          </div>
+          <p id="cepMsg" class="hidden text-xs"></p>
+        </div>
+
+        <!-- Remetente -->
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+            <i class="fas fa-user-pen mr-1"></i> Remetente <span class="text-red-400">*</span>
+          </label>
+          <input type="text" id="remetente" placeholder="Ex: Dr. Rômulo Paes" required data-caixa-alta class="w-full rounded-xl px-4 py-3 text-sm transition">
+        </div>
+
+        <!-- Grupo e Novo Grupo Lado a Lado -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+              <i class="fas fa-users mr-1"></i> Grupo / Setor
+            </label>
+            <select id="grupo" class="w-full rounded-xl px-4 py-3 text-sm transition">
+              <option value="">Selecione o grupo...</option>
+              <option value="DIRETORIA/ IRR">DIRETORIA/ IRR</option>
+              <option value="GIPB">GIPB</option>
+              <option value="QPNB">QPNB</option>
+              <option value="PSPS">PSPS</option>
+              <option value="ICM">ICM</option>
+              <option value="IP">IP</option>
+              <option value="TRIATO">TRIATO</option>
+              <option value="WMP">WMP</option>
+              <option value="DCE">DCE</option>
+              <option value="HMM">HMM</option>
+              <option value="MV">MV</option>
+              <option value="CRL">CRL</option>
+              <option value="MEMÓRIAS">MEMÓRIAS</option>
+              <option value="SENS">SENS</option>
+              <option value="NESPE">NESPE</option>
+              <option value="SGP">SGP</option>
+              <option value="NGS">NGS</option>
+              <option value="GFP">GFP</option>
+              <option value="BMIM">BMIM</option>
+              <option value="CVIP">CVIP</option>
+              <option value="GEL">GEL</option>
+              <option value="PCPP">PCPP</option>
+              <option value="VDE">VDE</option>
+              <option value="SEC">SEC</option>
+              <option value="ASFOC">ASFOC</option>
+              <option value="FIOSÁÚDE">FIOSÁÚDE</option>
+              <option value="COLVET">COLVET</option>
+              <option value="IB">IB</option>
+              <option value="BIOTÉRIO">BIOTÉRIO</option>
+              <option value="GETESA">GETESA</option>
+              <option value="BIP">BIP</option>
+              <option value="EM">EM</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+              <i class="fas fa-plus-circle mr-1"></i> Ou digite um novo grupo
+            </label>
+            <input type="text" id="novoGrupo" placeholder="Nome do novo grupo/setor" data-caixa-alta class="w-full rounded-xl px-4 py-3 text-sm transition">
+          </div>
+        </div>
+
+        <!-- Valor -->
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+            <i class="fas fa-money-bill-wave mr-1"></i> Valor <span class="text-red-400">*</span>
+          </label>
+          <div class="relative">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">R$</span>
+            <input type="text" id="valor" placeholder="0,00" required class="w-full rounded-xl pl-10 pr-4 py-3 text-lg font-mono transition">
+          </div>
+          <p class="text-xs text-slate-500 mt-1">Digite apenas números - formatação automática</p>
+        </div>
+
+        <!-- Responsável e Observação -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+              <i class="fas fa-id-badge mr-1"></i> Responsável (automático)
+            </label>
+            <input type="text" id="responsavel" readonly tabindex="-1" class="w-full rounded-xl px-4 py-3 text-sm transition opacity-70 cursor-not-allowed">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+              <i class="fas fa-comment mr-1"></i> Observação
+            </label>
+            <input type="text" id="observacao" placeholder="Informações adicionais" data-caixa-alta class="w-full rounded-xl px-4 py-3 text-sm transition">
+          </div>
+        </div>
+
+        <!-- Botão -->
+        <button type="submit" id="btnSalvar" class="w-full btn-primary text-white font-bold py-3.5 px-6 rounded-xl transition flex items-center justify-center gap-2 text-base">
+          <i class="fas fa-save"></i>
+          <span>Registrar Envio</span>
+        </button>
+      </form>
+
+      <!-- Status -->
+      <div id="status" class="hidden mt-5 p-4 rounded-xl border text-sm"></div>
+    </div>
+
+    <!-- Últimos Registros -->
+    <div class="mt-8 bg-card border border-card rounded-2xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+          <i class="fas fa-clock-rotate-left text-indigo-400"></i> Últimos Registros
+        </h3>
+        <a href="busca.html" class="text-xs text-indigo-400 hover:text-indigo-300 transition">Ver todos →</a>
+      </div>
+      <div id="ultimosRegistros" class="space-y-2">
+        <div class="text-center text-slate-500 text-sm py-8">
+          <i class="fas fa-spinner fa-spin mr-2"></i> Carregando...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Responsável = usuário logado (não dá para digitar outro nome)
+    document.getElementById('responsavel').value = (lerSessao() || {}).nome || '';
+
+    // FORMATAÇÃO DO VALOR
+    document.getElementById('valor').addEventListener('input', function() {
+      let v = this.value.replace(/\D/g, '');
+      if (v === '') return;
+      this.value = (parseFloat(v) / 100).toFixed(2).replace('.', ',');
+    });
+
+    // CEP: máscara + busca automática (ViaCEP) ao completar 8 dígitos
+    const cepInput = document.getElementById('cep');
+    cepInput.addEventListener('input', function() {
+      const d = this.value.replace(/\D/g, '').slice(0, 8);
+      this.value = d.length > 5 ? d.slice(0, 5) + '-' + d.slice(5) : d;
+      if (d.length === 8) buscarCep();
+    });
+    document.getElementById('btnCep').addEventListener('click', buscarCep);
+
+    async function buscarCep() {
+      const cep = cepInput.value.replace(/\D/g, '');
+      const msg = document.getElementById('cepMsg');
+      if (cep.length !== 8) { msg.className = 'text-xs text-amber-400'; msg.textContent = 'Digite os 8 números do CEP.'; return; }
+      msg.className = 'text-xs text-slate-400'; msg.textContent = 'Buscando CEP...';
+      try {
+        const j = await (await fetch(`https://viacep.com.br/ws/${cep}/json/`)).json();
+        if (j.erro) { msg.className = 'text-xs text-amber-400'; msg.textContent = 'CEP não encontrado. Preencha o endereço manualmente.'; return; }
+        const rua = document.getElementById('endereco');
+        rua.value = ((j.logradouro || '') + (j.logradouro ? ', ' : '')).toUpperCase();
+        document.getElementById('bairro').value = (j.bairro || '').toUpperCase();
+        document.getElementById('cidade').value = (j.localidade || '').toUpperCase();
+        document.getElementById('uf').value = (j.uf || '').toUpperCase();
+        msg.className = 'text-xs text-emerald-400'; msg.textContent = 'Endereço preenchido. Complete com o número.';
+        rua.focus(); rua.setSelectionRange(rua.value.length, rua.value.length);
+      } catch (err) {
+        msg.className = 'text-xs text-amber-400'; msg.textContent = 'Não foi possível consultar o CEP agora. Preencha manualmente.';
+      }
+    }
+
+    const CAMPOS_LIMPAR = ['destinatario','cep','endereco','bairro','cidade','uf','remetente','grupo','novoGrupo','observacao','valor','data'];
+
+    // ENVIO DO FORMULÁRIO
+    document.getElementById('formCorreio').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnSalvar');
+      const status = document.getElementById('status');
+      const textoBtn = '<i class="fas fa-save"></i> Registrar Envio';
+      const erro = (html) => { status.className = 'mt-5 p-4 rounded-xl border text-sm status-error block'; status.innerHTML = html; };
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+      status.className = 'hidden';
+
+      const novoGrupo = document.getElementById('novoGrupo').value.trim();
+      const v = id => document.getElementById(id).value.trim();
+      const payload = {
+        dataEnvio: v('data'),
+        quantidade: parseInt(document.getElementById('quantidade').value) || 1,
+        tipoEnvio: v('tipoEnvio'),
+        destinatario: v('destinatario'),
+        cep: v('cep'),
+        endereco: v('endereco').replace(/[,\s]+$/, ''),
+        bairro: v('bairro'),
+        cidade: v('cidade'),
+        uf: v('uf'),
+        remetente: v('remetente'),
+        grupo: novoGrupo !== '' ? novoGrupo : v('grupo'),
+        valor: v('valor'),
+        observacao: v('observacao')
+      };
+
+      if (!payload.remetente || !payload.valor) {
+        erro('<i class="fas fa-exclamation-circle mr-2"></i> Preencha todos os campos obrigatórios (*)');
+        btn.disabled = false; btn.innerHTML = textoBtn;
+        return;
+      }
+
+      try {
+        const r = await api('criar', payload);
+        if (!r.sucesso) throw new Error(r.mensagem);
+
+        status.className = 'mt-5 p-4 rounded-xl border text-sm status-success block';
+        status.innerHTML = '<div class="flex items-center gap-2"><i class="fas fa-check-circle text-emerald-400"></i><span>Lançamento registrado com sucesso!</span></div>';
+
+        CAMPOS_LIMPAR.forEach(id => document.getElementById(id).value = '');
+        document.getElementById('quantidade').value = 1;
+        document.getElementById('cepMsg').className = 'hidden';
+        carregarUltimosRegistros();
+      } catch (err) {
+        erro(`<i class="fas fa-times-circle mr-2"></i> Erro: ${esc(err.message)}`);
+      } finally {
+        btn.disabled = false; btn.innerHTML = textoBtn;
+      }
+    });
+
+    // ÚLTIMOS REGISTROS
+    async function carregarUltimosRegistros() {
+      const container = document.getElementById('ultimosRegistros');
+      try {
+        const data = await api('buscar', { limite: 5 });
+        if (!data.sucesso || data.registros.length === 0) {
+          container.innerHTML = '<div class="text-center text-slate-500 text-sm py-8"><i class="fas fa-inbox text-2xl block mb-2"></i>Nenhum registro encontrado</div>';
+          return;
+        }
+        container.innerHTML = data.registros.map(r => `
+          <div class="flex items-center justify-between p-3 rounded-xl bg-slate-900/50 border border-slate-800/50 hover:border-indigo-500/30 transition">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-medium text-slate-400">${r.data ? dataBR(r.data) : 'AGUARDANDO ENVIO'}</span>
+                <span class="badge text-xs">${esc(r.grupo || '-')}</span>
+              </div>
+              <p class="text-sm font-medium text-white truncate">${esc(r.destinatario || 'SEM DESTINATÁRIO')}</p>
+              <p class="text-xs text-slate-500 truncate">${esc(r.remetente || '-')}</p>
+            </div>
+            <div class="text-right ml-4">
+              <p class="text-sm font-bold text-emerald-400">${r.valor ? 'R$ ' + r.valor.toFixed(2).replace('.', ',') : 'R$ 0,00'}</p>
+              <span class="text-xs text-slate-500">${esc(r.tipoEnvio || 'SEDEX')}</span>
+            </div>
+          </div>`).join('');
+      } catch (err) {
+        console.error('Erro ao carregar registros:', err);
+      }
+    }
+
+    carregarUltimosRegistros();
+  </script>
+</body>
+</html>
