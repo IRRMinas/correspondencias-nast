@@ -3,7 +3,7 @@
 // ============================================================
 
 // >>> COLE AQUI a URL do app da web (Implantar > Gerenciar implantações). É o ÚNICO lugar que precisa dela. <<<
-const WEB_APP_URL = "COLE_AQUI_A_URL_DO_APP_DA_WEB";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzJIPAhV2zUJ8pOM2_GcGNLqnFZryivtUNBOr12OXBX1umjrKo5JNb1pk2ylkLhrm22-Q/exec";
 
 const SESSAO_KEY = 'correios_sessao_v3';
 
