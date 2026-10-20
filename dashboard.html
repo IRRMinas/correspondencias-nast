@@ -27,6 +27,25 @@
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
     .sticky-col { position: sticky; left: 0; background: #12121e; z-index: 10; }
     thead .sticky-col { z-index: 20; }
+    .somente-impressao { display: none; }
+    @page { size: A4; margin: 12mm; }
+    @media print {
+      body { background: #fff !important; }
+      .max-w-7xl > *:not(#blocoDetalhamentoGrupo) { display: none !important; }
+      #modalSenha, .nao-imprimir { display: none !important; }
+      .max-w-7xl { max-width: none !important; padding: 0 !important; margin: 0 !important; }
+      #blocoDetalhamentoGrupo { border: none !important; border-radius: 0 !important; overflow: visible !important; margin: 0 !important; }
+      #blocoDetalhamentoGrupo, #blocoDetalhamentoGrupo * {
+        background: #fff !important; color: #000 !important; box-shadow: none !important;
+        border-color: #bbb !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      }
+      #blocoDetalhamentoGrupo .overflow-x-auto { overflow: visible !important; }
+      #blocoDetalhamentoGrupo table { font-size: 11px; border-collapse: collapse; }
+      #blocoDetalhamentoGrupo th, #blocoDetalhamentoGrupo td { padding: 6px 8px !important; border-bottom: 1px solid #ccc; }
+      #blocoDetalhamentoGrupo thead { display: table-header-group; }
+      #blocoDetalhamentoGrupo tr { page-break-inside: avoid; }
+      .somente-impressao { display: block !important; margin-bottom: 10px; }
+    }
     .view-tab { transition: all 0.2s; }
     .view-tab.active-tab { background: #6366f1; color: white; }
     .view-tab:not(.active-tab) { background: #1a1a2e; color: #94a3b8; }
@@ -94,12 +113,24 @@
     </div>
 
     <!-- TABELA DETALHADA -->
-    <div class="bg-card border border-card rounded-2xl overflow-hidden">
-      <div class="p-5 border-b border-card flex items-center justify-between">
+    <div id="blocoDetalhamentoGrupo" class="bg-card border border-card rounded-2xl overflow-hidden mb-8">
+      <div class="somente-impressao">
+        <h2 style="font-size:16px;font-weight:700">Correios IRR - Detalhamento por Grupo - Ano 2026</h2>
+        <p id="dataImpressao" style="font-size:10px"></p>
+      </div>
+      <div class="p-5 border-b border-card flex items-center justify-between gap-3">
         <h3 class="text-sm font-semibold text-white flex items-center gap-2">
           <i class="fas fa-table text-indigo-400"></i> Detalhamento por Grupo
         </h3>
-        <span class="text-xs text-slate-500"><i class="far fa-calendar-alt mr-1"></i> Ano 2026</span>
+        <div class="flex items-center gap-3">
+          <span class="text-xs text-slate-500"><i class="far fa-calendar-alt mr-1"></i> Ano 2026</span>
+          <button type="button" onclick="imprimirDetalhamentoGrupo()" class="nao-imprimir text-xs font-semibold px-3 py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition" title="Imprimir ou salvar em PDF">
+            <i class="fas fa-print mr-1"></i> Imprimir
+          </button>
+          <button type="button" onclick="baixarDetalhamentoGrupoCSV()" class="nao-imprimir text-xs font-semibold px-3 py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition" title="Baixar para abrir no Excel">
+            <i class="fas fa-file-excel mr-1"></i> Excel
+          </button>
+        </div>
       </div>
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
@@ -120,6 +151,7 @@
               </td>
             </tr>
           </tbody>
+          <tfoot id="rodapeTabela"></tfoot>
         </table>
       </div>
     </div>
@@ -162,6 +194,31 @@
     let dashboardData = null;
     let visaoMensalAtual = 'grupo'; // 'grupo' = uma linha por grupo (expande em meses) | 'mes' = uma linha por mês (expande em grupos)
     let expandidos = new Set(); // guarda quais linhas estão expandidas no momento
+
+    function imprimirDetalhamentoGrupo() {
+      document.getElementById('dataImpressao').textContent = 'Impresso em ' + new Date().toLocaleString('pt-BR');
+      window.print();
+    }
+
+    function baixarDetalhamentoGrupoCSV() {
+      if (!dashboardData) return alert('Aguarde o carregamento dos dados.');
+      const c = dashboardData.consolidado;
+      const grupos = Object.keys(c).filter(g => c[g].total > 0).sort((a, b) => c[b].total - c[a].total);
+      const num = v => Number(v || 0).toFixed(2).replace('.', ',');
+      const linhas = [['Grupo', '1º Trim', '2º Trim', '3º Trim', '4º Trim', 'Total']];
+      const tot = [0, 0, 0, 0];
+      grupos.forEach(g => {
+        c[g].trimestral.forEach((v, i) => { tot[i] += v; });
+        linhas.push([g, ...c[g].trimestral.map(num), num(c[g].total)]);
+      });
+      linhas.push(['TOTAL GERAL', ...tot.map(num), num(tot[0] + tot[1] + tot[2] + tot[3])]);
+      const csv = '\ufeff' + linhas.map(l => l.map(x => '"' + String(x).replace(/"/g, '""') + '"').join(';')).join('\r\n');
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+      a.download = 'detalhamento-por-grupo-2026.csv';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
 
     // Formatação de moeda
     function formatMoney(value) {
@@ -222,6 +279,18 @@
             `;
             corpo.appendChild(tr);
           });
+
+          const tot = [0, 0, 0, 0];
+          gruposOrdenados.forEach(g => data.consolidado[g].trimestral.forEach((v, i) => { tot[i] += v; }));
+          document.getElementById('rodapeTabela').innerHTML = `
+            <tr class="border-t-2 border-card">
+              <td class="px-5 py-4 font-bold text-white">TOTAL GERAL</td>
+              <td class="px-5 py-4 text-right font-bold text-white font-mono">${formatMoney(tot[0])}</td>
+              <td class="px-5 py-4 text-right font-bold text-white font-mono">${formatMoney(tot[1])}</td>
+              <td class="px-5 py-4 text-right font-bold text-white font-mono">${formatMoney(tot[2])}</td>
+              <td class="px-5 py-4 text-right font-bold text-white font-mono">${formatMoney(tot[3])}</td>
+              <td class="px-5 py-4 text-right font-bold text-white font-mono">${formatMoney(tot[0] + tot[1] + tot[2] + tot[3])}</td>
+            </tr>`;
         }
 
         // Gráfico
